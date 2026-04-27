@@ -40,6 +40,14 @@ Then in your reply, **cite the evidence** inline: file path + line number, comma
 - ❌ "Based on what I did earlier"
 - ❌ "It should be there"
 
+## Relevance matters — not just "any tool call"
+
+The companion Stop hook does **subject-relevance matching**, not just "did this turn use a tool". If you claim something specific (a file path, a function name, a line number, a backticked symbol), the hook expects to see that subject appear in a Read/Grep/Glob/Bash input from the same turn. Reading an unrelated file does **not** satisfy a claim about a different file.
+
+Practical consequence: when you make a specific claim, the tool call you cite must actually touch the thing you're claiming about. If you grep for a function, the grep pattern should be the function name (or include it). If you assert "fixed src/foo.py:47", a Read of `src/foo.py` is the evidence; a Read of `src/bar.py` is not.
+
+For purely generic claims ("done.", "all set."), any evidence-tool call this turn passes the check, but those generic claims are also the easiest for the user to push back on — prefer specific claims with citations.
+
 ## Special trap: re-scanning the same file
 
 A file you scanned one turn ago is **not** verified for this turn. Memory of "I just looked at this" is exactly the failure mode this skill exists to prevent. Re-read every time the claim is made fresh. Two seconds of Read beats one round of being caught wrong.

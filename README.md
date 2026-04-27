@@ -100,19 +100,27 @@ Step 6 is intentionally lenient: **any** evidence-gathering tool call this turn 
 
 ## Limitations (read before installing)
 
-I'd rather you go in clear-eyed than discover these after a week and uninstall in frustration.
+Honest accounting of what the hook can and can't do, after the v2 rewrite.
 
-**1. The hook is softer than the framing suggests.** The skill (the SKILL.md) is the part that does most of the work — once it's in the agent's context, completion claims drop noticeably. The Stop hook is a backstop, not a wall. `exit 2` from a Stop hook is documented to feed back to the model, but the exact downstream effect varies by Claude Code version. Treat the hook as *"hopefully nudges the agent to verify on the next turn"* — not as a guaranteed block. The skill is what carries the load.
+**What the hook now does correctly (covered by tests):**
+- Strips fenced code blocks and blockquote lines before scanning, so code mentions of `done` / `fixed` and quoted user text don't trigger.
+- Strips inline backticked code per sentence — same reason.
+- Skips triggers preceded by future/intent markers within ~30 chars: *"I'll add"*, *"to fix"*, *"going to"*, *"should/would/could"*, *"if"*, *"how do I"*, plus Chinese 不/没/要/想/准备/打算.
+- Catches paraphrases the v1 missed: *"all set"*, *"wrapped up"*, *"good to go"*, *"taken care of"*, *"isn't tested"*, plus 完成了/加好了/修好了.
+- Does **subject-relevance matching**: when a claim mentions a specific file path, backticked token, snake_case / camelCase / `_prefixed` identifier, or `line N`, the hook requires that subject to appear in some Read/Grep/Glob/Bash input from the same turn. Reading an unrelated file no longer satisfies a claim about a different file.
+- Falls back to "any evidence-tool call passes" only for purely generic claims (e.g. bare *"done."*) where no specific subject was extracted.
 
-**2. The regex is brittle in both directions.**
-- *False positives:* "I **added** a comment explaining X" (narrating intent), "**fixed** in v2" (quoting someone else), and any conversational use of "**done**" will trigger and feel like noise. After a few days you may want to relax the patterns or you'll resent the skill.
-- *False negatives:* the agent can paraphrase out of detection — "the change is in place", "that's wrapped up", "taken care of", "all set". These slip past today's pattern list. The skill prompt catches some of this; the hook does not.
+**What the hook still can't do:**
 
-**3. "Any tool call passes the check" is a coarse heuristic.** The hook can tell that *some* Read/Grep/Bash happened this turn, but not that the file read was the *relevant* file or that the grep was for the *right* symbol. A motivated agent could Read an unrelated file and then claim something else is done — and the hook would let it through. Catching that needs semantic matching the hook can't do.
+**1. Stop hook semantics depend on Claude Code's version.** The hook exits 2 with a stderr message; what Claude Code does with that stderr (re-prompt the model? log and ignore? show to the user?) is the platform's call, and we can't make it harder than that from our side. Treat the hook as a strong nudge, not a hard block — the skill prompt is what carries most of the weight.
 
-**What this means in practice:** prove-done reliably catches the lowest-effort failure mode — *zero-tool-call confident "done"* in a single turn. That mode is real and worth catching. It does **not** catch the harder mode from the original incident (claims that survive multiple verification rounds because each individual round looked plausible). For that, the human still has to spot-check.
+**2. Subject extraction is heuristic.** It looks for things that *look like* identifiers — `foo.py`, `_cross_check_price`, backticked tokens, "line 47". Claims that name their subject in plain prose ("the auth middleware", "that test") won't have an extracted subject and will fall back to the generic rule. Adding NLP-grade entity extraction is out of scope.
 
-If you want the hook to bite harder, edit the trigger list and the evidence rule in `.claude/hooks/prove-done-check.py` for your project. The defaults are deliberately middle-of-the-road.
+**3. Relevance match is substring-based.** If your tool input mentions the subject at all, the hook accepts it. A Read of the right file followed by a confident lie about line numbers will still pass. The hook can prove the agent *touched* the relevant file; it can't prove what the agent *concluded* was correct.
+
+**4. Multi-turn drift is still on the human.** The original incident was *"scanned three times, missed the same content three times"* — each turn individually looked fine. This hook fires per-turn and can't reason across turns. If you want cross-turn checking, that's a separate tool.
+
+If the defaults are too noisy or too quiet for your project, the trigger list, intent-marker list, and identifier regex are all in [`.claude/hooks/prove-done-check.py`](./.claude/hooks/prove-done-check.py) — fork and tune.
 
 ## Why two repos, not one
 
