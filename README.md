@@ -98,6 +98,22 @@ For each Stop event:
 
 Step 6 is intentionally lenient: **any** evidence-gathering tool call this turn passes the check. The point is to catch pure-memory claims, not to police every word.
 
+## Limitations (read before installing)
+
+I'd rather you go in clear-eyed than discover these after a week and uninstall in frustration.
+
+**1. The hook is softer than the framing suggests.** The skill (the SKILL.md) is the part that does most of the work — once it's in the agent's context, completion claims drop noticeably. The Stop hook is a backstop, not a wall. `exit 2` from a Stop hook is documented to feed back to the model, but the exact downstream effect varies by Claude Code version. Treat the hook as *"hopefully nudges the agent to verify on the next turn"* — not as a guaranteed block. The skill is what carries the load.
+
+**2. The regex is brittle in both directions.**
+- *False positives:* "I **added** a comment explaining X" (narrating intent), "**fixed** in v2" (quoting someone else), and any conversational use of "**done**" will trigger and feel like noise. After a few days you may want to relax the patterns or you'll resent the skill.
+- *False negatives:* the agent can paraphrase out of detection — "the change is in place", "that's wrapped up", "taken care of", "all set". These slip past today's pattern list. The skill prompt catches some of this; the hook does not.
+
+**3. "Any tool call passes the check" is a coarse heuristic.** The hook can tell that *some* Read/Grep/Bash happened this turn, but not that the file read was the *relevant* file or that the grep was for the *right* symbol. A motivated agent could Read an unrelated file and then claim something else is done — and the hook would let it through. Catching that needs semantic matching the hook can't do.
+
+**What this means in practice:** prove-done reliably catches the lowest-effort failure mode — *zero-tool-call confident "done"* in a single turn. That mode is real and worth catching. It does **not** catch the harder mode from the original incident (claims that survive multiple verification rounds because each individual round looked plausible). For that, the human still has to spot-check.
+
+If you want the hook to bite harder, edit the trigger list and the evidence rule in `.claude/hooks/prove-done-check.py` for your project. The defaults are deliberately middle-of-the-road.
+
 ## Why two repos, not one
 
 `claude-think-twice` and `claude-prove-done` solve adjacent failure modes that benefit from being separately installable:
