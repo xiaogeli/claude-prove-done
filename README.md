@@ -1,5 +1,7 @@
 # claude-prove-done
 
+**English** · [简体中文](README.zh-CN.md)
+
 > **Memory ≠ evidence.**
 > *The missing beat between "I'm done" and "you can verify."*
 
