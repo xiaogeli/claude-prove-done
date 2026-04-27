@@ -40,4 +40,12 @@ Keep the trigger list **narrow but specific**. A pattern that catches 80% of rea
 
 ## Testing
 
-The repo doesn't (yet) ship a formal test suite — the smoke harness lives in commit messages and the regression block at the bottom of recent PRs. If you change `prove-done-check.py`, run the harness from the v2 commit (`git show 98cfede`) and paste the pass/fail summary into your PR. A change that fails any of the 16 baseline cases needs explicit justification.
+```bash
+tests/run.sh
+```
+
+16 cases — v1 regressions, false-positive fixes, false-negative fixes, subject-relevance matched/mismatched, loop guard. Exit code is the number of failures, so it drops cleanly into CI.
+
+If you change `prove-done-check.py`, paste the harness summary into your PR. A change that fails any of the baseline cases needs explicit justification (and ideally a new case alongside that codifies the new behavior).
+
+When adding a new trigger or fixing a missed phrasing, add a new `run` line to `tests/run.sh` that locks in the expected behavior. The harness is intentionally a flat bash file with inline JSONL transcripts — no test framework, no fixtures, easy to fork.

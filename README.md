@@ -119,6 +119,14 @@ Copy-Item "$env:TEMP\claude-prove-done\.claude\hooks\prove-done-check.*" "$env:U
 - **Python 3** on PATH (the hook prefers `python3`, falls back to `python`, then `py`). If no Python is found, the hook degrades to a no-op rather than blocking everything.
 - A POSIX-ish shell (`bash`). On Windows that means git-bash or WSL — Claude Code already needs one.
 
+## Tests
+
+```bash
+tests/run.sh
+```
+
+16 cases covering v1 regressions, false-positive fixes (code fences, blockquotes, future tense, questions), false-negative fixes (paraphrases the v1 missed), subject-relevance matched/mismatched, and the `stop_hook_active` loop guard. Exit code is the number of failures, so it drops into CI as-is. Forks should run it before changing the trigger list, the intent-marker filter, or the relevance logic.
+
 ---
 
 ## How it works
@@ -184,6 +192,21 @@ Honest accounting of what the hook can and can't do, after the v2 rewrite.
 **4. Multi-turn drift is still on the human.** The original incident was *"scanned three times, missed the same content three times"* — each turn individually looked fine. This hook fires per-turn and can't reason across turns. If you want cross-turn checking, that's a separate tool.
 
 If the defaults are too noisy or too quiet for your project, the trigger list, intent-marker list, and identifier regex are all in [`.claude/hooks/prove-done-check.py`](./.claude/hooks/prove-done-check.py) — fork and tune.
+
+---
+
+## Porting to other agents
+
+The hook (`.claude/hooks/prove-done-check.*`) is Claude-Code-specific — it reads Claude Code's transcript JSONL and is wired through Claude Code's Stop hook event. **The skill prompt (`SKILL.md`) is portable**, and most of the failure mode this project addresses isn't Claude-Code-specific.
+
+If you're using a different agent and want the soft layer, lift `.claude/skills/prove-done/SKILL.md` and drop it where your agent reads its system / persistent instructions:
+
+- **Cursor** — paste into `.cursorrules` or your project rules.
+- **Aider** — paste into the conventions section of your `CONVENTIONS.md` (or whatever Aider points at via `--read`).
+- **Continue** — paste into `~/.continue/config.json` under `systemMessage`, or include via a custom slash command.
+- **Plain Claude API / Agent SDK** — append to your system prompt.
+
+The hard layer (the Stop hook) needs an agent-specific port: read its transcript format, identify the equivalent of Claude Code's `Stop` event (or the closest "before sending" hook the platform exposes), and adapt `prove-done-check.py`'s pipeline. PRs welcome — open an issue first to discuss the agent's hook surface.
 
 ---
 
