@@ -1,6 +1,6 @@
 ---
 name: prove-done
-description: Before claiming a task is done/fixed/added/scanned, verify with a tool call. Triggers on completion claims ("done", "fixed", "added", "已修", "已加", "已扫", "已记", "已 commit") and forces a verification checklist. Also catches negative existence claims ("X doesn't exist", "no tests for Y", "X 没有 Y"). Use this skill whenever you are about to assert that something has been completed, that something exists, or that something does not exist.
+description: Before claiming a task is done/fixed/added/scanned, verify with a tool call. Triggers on completion claims ("done", "fixed", "added", "scanned", "committed", "all set", "wrapped up") and forces a verification checklist. Also catches negative-existence claims ("X doesn't exist", "no tests for Y", "missing", "0 tests"). Use this skill whenever you are about to assert that something has been completed, that something exists, or that something does not exist.
 ---
 
 # prove-done
@@ -9,15 +9,13 @@ You are about to make a claim about state — that something is done, present, o
 
 ## When this skill activates
 
-Activate **before sending** any message that contains, in any language, a phrase asserting completion or non-existence. Common triggers:
+Activate **before sending** any message that contains a phrase asserting completion or non-existence. Common triggers:
 
-**Completion claims (English):** done, fixed, added, removed, deleted, updated, committed, pushed, scanned, checked, ran, tested, implemented, wired up, hooked up, in place, taken care of, sorted, handled.
+**Completion claims:** done, fixed, added, removed, deleted, updated, patched, reverted, moved, renamed, merged, applied, shipped, committed, pushed, scanned, checked, tested, ran, verified, implemented, wired up, hooked up, set up, sorted, handled, taken care of, in place, all set, good to go, wrapped up.
 
-**Completion claims (Chinese):** 已修 / 已加 / 已扫 / 已记 / 已删 / 已改 / 已写 / 已 commit / 已 push / 已经做了 / 已经有了 / 之前讨论过 / 搞定了 / 处理好了.
+**Negative-existence claims:** "X doesn't exist", "no tests for Y", "there's no Z", "missing", "0 tests", "not implemented", "X isn't tested", "X isn't covered".
 
-**Negative-existence claims:** "X doesn't exist", "no tests for Y", "there's no Z", "missing", "0 tests", "not implemented", "X 不存在", "X 没有 Y", "没测试", "没文档".
-
-**Past-state claims about your own work:** "I already did X", "I scanned that", "I checked earlier", "上一轮做过了".
+**Past-state claims about your own work:** "I already did X", "I scanned that", "I checked earlier", "we discussed this before".
 
 If your draft message contains any of these, stop and run the checklist below before sending.
 

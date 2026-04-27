@@ -3,7 +3,7 @@
 > **Memory ≠ evidence.**
 > *The missing beat between "I'm done" and "you can verify."*
 
-A Claude Code **skill + hook** that makes AI coding agents see the one mistake under every false "done": the silent belief that *remembering having intended to do it* is the same as *having actually done it*. It isn't. From inside the agent's head, the two leave the same trace — a working-memory token that reads "taken care of." From outside, on disk, they're radically different. The user pays the gap. This project does exactly one thing — in the moment before the agent writes "done / fixed / 已修", it makes the agent read the difference right-way-up.
+A Claude Code **skill + hook** that makes AI coding agents see the one mistake under every false "done": the silent belief that *remembering having intended to do it* is the same as *having actually done it*. It isn't. From inside the agent's head, the two leave the same trace — a working-memory token that reads "taken care of." From outside, on disk, they're radically different. The user pays the gap. This project does exactly one thing — in the moment before the agent writes "done" or "fixed", it makes the agent read the difference right-way-up.
 
 Pairs naturally with [`claude-think-twice`](https://github.com/xiaogeli/claude-think-twice): *think-twice* stops `--rushed` before `git push`; *prove-done* stops `--imagined` before "I'm done."
 
@@ -133,7 +133,7 @@ tests/run.sh
 
 ### The skill (the prompt half)
 
-Lives at `.claude/skills/prove-done/SKILL.md`. When loaded, it teaches the agent the rule in words: *before saying done/fixed/已修, run a Read or Grep that touches the thing you're claiming about, then cite the result inline (file:line, command output, hit count). If you can't verify, say "not yet" instead.* The skill also names the specific failure mode — re-claiming "done" about something you already scanned this conversation, when the working-memory token feels truthy but the file hasn't been re-examined this turn.
+Lives at `.claude/skills/prove-done/SKILL.md`. When loaded, it teaches the agent the rule in words: *before saying done / fixed / added, run a Read or Grep that touches the thing you're claiming about, then cite the result inline (file:line, command output, hit count). If you can't verify, say "not yet" instead.* The skill also names the specific failure mode — re-claiming "done" about something you already scanned this conversation, when the working-memory token feels truthy but the file hasn't been re-examined this turn.
 
 ### The hook (the backstop half)
 
@@ -144,8 +144,8 @@ For each Stop event:
 1. Parse the hook payload from stdin → get `transcript_path` and `stop_hook_active`. If `stop_hook_active` is true (we already fired and Claude is re-stopping), exit 0 — that's the loop guard.
 2. Read the transcript JSONL. Walk back to the last user message; everything after it is "this turn." Concat the assistant text blocks; collect every `tool_use` block (name **and** input).
 3. Strip whole-text constructs that aren't real claims: fenced code (`` ``` ``…`` ``` ``), blockquote lines (`> ...`).
-4. Split into sentences (English + Chinese punctuation), and per sentence strip inline backticks for trigger detection only — keep the original sentence around for subject extraction.
-5. For each sentence, find trigger words against ~40 patterns (English + Chinese, completion + negative-existence). Skip a trigger if a future/intent marker (`I'll`, `to fix`, `going to`, `should`, `would`, `if`, `how do I`, Chinese 不/没/要/想/准备/打算) sits within 30 characters before it.
+4. Split into sentences, and per sentence strip inline backticks for trigger detection only — keep the original sentence around for subject extraction.
+5. For each sentence, find trigger words against ~25 patterns (completion + negative-existence). Skip a trigger if a future/intent marker (`I'll`, `to fix`, `going to`, `should`, `would`, `if`, `how do I`) sits within 30 characters before it.
 6. From each surviving claim sentence, extract **subjects**: file paths (`foo.py`, `src/x/y.ts`), backticked tokens, snake_case / camelCase / `_prefixed` identifiers (`_cross_check_price`), and `line N` references.
 7. Decide:
    - **Specific claim, relevant evidence:** subjects exist and at least one appears as a substring in some Read/Grep/Glob/Bash input this turn → exit 0.
@@ -159,11 +159,9 @@ The relevance check is the part that makes this hook bite. *"Any tool call passe
 
 ## Triggers
 
-**Completion (English):** done, fixed, added, removed, deleted, updated, patched, reverted, moved, renamed, merged, applied, shipped, committed, pushed, scanned, checked, tested, ran, verified, implemented, wired up, hooked up, set up, sorted, handled, taken care of, in place, all set, good to go, wrapped up, ready to go, *it's/that's/now (done|fixed|ready|complete|working)*.
+**Completion:** done, fixed, added, removed, deleted, updated, patched, reverted, moved, renamed, merged, applied, shipped, committed, pushed, scanned, checked, tested, ran, verified, implemented, wired up, hooked up, set up, sorted, handled, taken care of, in place, all set, good to go, wrapped up, ready to go, *it's/that's/now (done|fixed|ready|complete|working)*.
 
-**Completion (Chinese):** 已修 / 已加 / 已扫 / 已记 / 已删 / 已改 / 已写 / 已 commit / 已 push / 已经做了 / 已经有了 / 搞定了 / 处理好了 / 完成了 / 加好了 / 修好了.
-
-**Negative existence:** doesn't exist, no tests, zero tests, missing, not implemented, *isn't (implemented|tested|covered|there)*, 不存在 / 没测试 / 没文档 / 没实现 / 没有…(测试|文档|实现|覆盖).
+**Negative existence:** doesn't exist, no tests, zero tests, missing, not implemented, *isn't (implemented|tested|covered|there)*.
 
 The full list lives in `TRIGGER_PATTERNS` in [`.claude/hooks/prove-done-check.py`](./.claude/hooks/prove-done-check.py). New phrases land via PRs that cite a real-world transcript line — see [`CONTRIBUTING.md`](./CONTRIBUTING.md).
 
@@ -176,8 +174,8 @@ Honest accounting of what the hook can and can't do, after the v2 rewrite.
 **What the hook now does correctly (covered by tests):**
 - Strips fenced code blocks and blockquote lines before scanning, so code mentions of `done` / `fixed` and quoted user text don't trigger.
 - Strips inline backticked code per sentence — same reason.
-- Skips triggers preceded by future/intent markers within ~30 chars: *"I'll add"*, *"to fix"*, *"going to"*, *"should/would/could"*, *"if"*, *"how do I"*, plus Chinese 不/没/要/想/准备/打算.
-- Catches paraphrases the v1 missed: *"all set"*, *"wrapped up"*, *"good to go"*, *"taken care of"*, *"isn't tested"*, plus 完成了/加好了/修好了.
+- Skips triggers preceded by future/intent markers within ~30 chars: *"I'll add"*, *"to fix"*, *"going to"*, *"should/would/could"*, *"if"*, *"how do I"*.
+- Catches paraphrases the v1 missed: *"all set"*, *"wrapped up"*, *"good to go"*, *"taken care of"*, *"isn't tested"*.
 - Does **subject-relevance matching**: when a claim mentions a specific file path, backticked token, snake_case / camelCase / `_prefixed` identifier, or `line N`, the hook requires that subject to appear in some Read/Grep/Glob/Bash input from the same turn. Reading an unrelated file no longer satisfies a claim about a different file.
 - Falls back to "any evidence-tool call passes" only for purely generic claims (e.g. bare *"done."*) where no specific subject was extracted.
 

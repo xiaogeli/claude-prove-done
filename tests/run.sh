@@ -83,8 +83,8 @@ echo
 write_payload False
 
 echo "-- v1 regressions --"
-run "old-1: 已修 + no tool" 2 '{"type":"user","message":{"content":"x"}}
-{"type":"assistant","message":{"content":[{"type":"text","text":"已修，已加到 pending。"}]}}'
+run "old-1: bare 'fixed, added' + no tool" 2 '{"type":"user","message":{"content":"x"}}
+{"type":"assistant","message":{"content":[{"type":"text","text":"Fixed, added to pending."}]}}'
 
 run "old-2: trigger + Read foo.py" 0 '{"type":"user","message":{"content":"fix foo.py"}}
 {"type":"assistant","message":{"content":[{"type":"tool_use","name":"Read","id":"a","input":{"file_path":"foo.py"}},{"type":"text","text":"Done — foo.py is fixed at line 42."}]}}'
@@ -122,11 +122,11 @@ run "rel-1: claim foo.py + Read foo.py" 0 '{"type":"user","message":{"content":"
 run "rel-2: claim foo.py + Read bar.py" 2 '{"type":"user","message":{"content":"x"}}
 {"type":"assistant","message":{"content":[{"type":"tool_use","name":"Read","id":"a","input":{"file_path":"src/bar.py"}},{"type":"text","text":"Fixed src/foo.py at line 42."}]}}'
 
-run "rel-3: 已扫 _cross_check_price + matching Grep" 0 '{"type":"user","message":{"content":"x"}}
-{"type":"assistant","message":{"content":[{"type":"tool_use","name":"Grep","id":"a","input":{"pattern":"_cross_check_price","path":"tests/"}},{"type":"text","text":"已扫 _cross_check_price，6 个 hit。"}]}}'
+run "rel-3: scanned _cross_check_price + matching Grep" 0 '{"type":"user","message":{"content":"x"}}
+{"type":"assistant","message":{"content":[{"type":"tool_use","name":"Grep","id":"a","input":{"pattern":"_cross_check_price","path":"tests/"}},{"type":"text","text":"Scanned _cross_check_price — 6 hits in tests/."}]}}'
 
-run "rel-4: 已扫 _cross_check_price + unrelated Grep" 2 '{"type":"user","message":{"content":"x"}}
-{"type":"assistant","message":{"content":[{"type":"tool_use","name":"Grep","id":"a","input":{"pattern":"unrelated_thing","path":"src/"}},{"type":"text","text":"已扫 _cross_check_price，没找到。"}]}}'
+run "rel-4: scanned _cross_check_price + unrelated Grep" 2 '{"type":"user","message":{"content":"x"}}
+{"type":"assistant","message":{"content":[{"type":"tool_use","name":"Grep","id":"a","input":{"pattern":"unrelated_thing","path":"src/"}},{"type":"text","text":"Scanned _cross_check_price — no matches."}]}}'
 
 run "rel-5: generic done + Read anything" 0 '{"type":"user","message":{"content":"x"}}
 {"type":"assistant","message":{"content":[{"type":"tool_use","name":"Read","id":"a","input":{"file_path":"x.py"}},{"type":"text","text":"Done."}]}}'
@@ -134,7 +134,7 @@ run "rel-5: generic done + Read anything" 0 '{"type":"user","message":{"content"
 echo "-- loop guard --"
 write_payload True
 run "loop: stop_hook_active=true" 0 '{"type":"user","message":{"content":"x"}}
-{"type":"assistant","message":{"content":[{"type":"text","text":"已修."}]}}'
+{"type":"assistant","message":{"content":[{"type":"text","text":"Fixed."}]}}'
 
 rm -rf "$WORKDIR"
 

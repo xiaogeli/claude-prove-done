@@ -8,7 +8,7 @@ Most "I'm done" failures are linguistic-specific. The trigger pattern list is ho
 
 A good trigger PR has:
 
-1. **The phrase, with one real-world example.** *"all set on the migration"*, *"that's wrapped up"*, *"已经搞定"*. Cite a transcript line, even paraphrased — patterns added on theory rot fast.
+1. **The phrase, with one real-world example.** *"all set on the migration"*, *"that's wrapped up"*, *"the change is in place"*. Cite a transcript line, even paraphrased — patterns added on theory rot fast.
 2. **Direction: add or refine.**
    - **Add** if your phrase is a real claim that the current list misses (a false negative).
    - **Refine** if the current list fires on something that *isn't* a claim (a false positive — usually fixed by extending the intent-marker list, not by removing a trigger).
@@ -19,7 +19,7 @@ Keep the trigger list **narrow but specific**. A pattern that catches 80% of rea
 
 ## Other welcome contributions
 
-- **New languages.** Triggers in Japanese, Korean, German, Spanish, etc., if you use Claude Code in a non-English/Chinese workflow. Same rule: cite real phrasing, not theoretical.
+- **Other-language variants.** The maintained baseline is English. If you want triggers for another language and you use Claude Code in that workflow, propose a separate skill (`claude-prove-done-<lang>`) or a clearly-marked variant — keep the trigger lists language-clean rather than mixing them. Same rule: cite real phrasing, not theoretical.
 - **Better subject extraction.** The current `IDENT_RE` and `PATH_RE` are conservative. If your stack uses identifiers the regex misses (Erlang atoms, Lisp symbols, Kubernetes resource names), propose a regex addition with examples.
 - **Ports of the skill prompt to other agents** (Cursor, Aider, Copilot, Continue). The hook is Claude-Code-specific, but the SKILL.md prompt is portable. PR a link in the README.
 - **Clearer writing in `SKILL.md` or `README.md`.** The tone is deliberately direct — *"memory is not evidence"*, not *"please consider verifying"*. Keep that.

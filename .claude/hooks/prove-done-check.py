@@ -9,7 +9,7 @@ with evidence.
 
 Pipeline per turn:
   1. Concatenate assistant text blocks; collect tool_use blocks (name + input).
-  2. Split text into sentences (works for English and Chinese punctuation).
+  2. Split text into sentences.
   3. For each sentence:
      - Build a "stripped" version (no code fences, inline code, or quote
        lines) for trigger matching — code mentions of "done"/"fixed" don't
@@ -44,7 +44,7 @@ import re
 import sys
 
 
-# Trigger patterns. English uses \b; Chinese is literal. Patterns are matched
+# Trigger patterns. English with \b word boundaries. Patterns are matched
 # against the *stripped* sentence (no code fences / inline code / blockquotes).
 TRIGGER_PATTERNS = [
     # --- English: completion ---
@@ -64,13 +64,6 @@ TRIGGER_PATTERNS = [
     r"\b0\s+tests?\b",
     r"\bnot\s+implemented\b",
     r"\bisn'?t\s+(?:implemented|tested|covered|there)\b",
-    # --- Chinese: completion ---
-    r"已修", r"已加", r"已扫", r"已记", r"已删", r"已改", r"已写",
-    r"已 ?commit", r"已 ?push", r"已经做了", r"已经有了",
-    r"搞定了", r"处理好了", r"完成了", r"加好了", r"修好了",
-    # --- Chinese: negative existence ---
-    r"不存在", r"没测试", r"没文档", r"没实现",
-    r"没有.{0,8}(测试|文档|实现|覆盖)",
 ]
 
 
@@ -91,8 +84,7 @@ FUTURE_OR_INTENT = re.compile(
     r"should\s+|would\s+|could\s+|might\s+|may\s+|"
     r"how\s+(?:do|to)\s+(?:i|you|we)\s+|"
     r"(?:can|do|did|would|could|should|will)\s+(?:i|you|we|it|this|that)\s+|"
-    r"if\s+(?:i|you|we|it|this|that)\s+|"
-    r"(?:不|没|别|要|想|准备|打算)"  # Chinese future/negation
+    r"if\s+(?:i|you|we|it|this|that)\s+"
     r")$",
     re.IGNORECASE,
 )
@@ -139,9 +131,8 @@ def strip_inline_code(text: str) -> str:
 
 
 def split_sentences(text: str) -> list[str]:
-    """Cheap sentence split that handles EN + ZH punctuation and bullet lines."""
-    # Treat newlines and CJK / EN sentence terminators as splits.
-    parts = re.split(r"(?:[.!?。！？；;]+\s+|\n+|(?<=[.!?。！？])$)", text)
+    """Cheap sentence split on standard English punctuation and newlines."""
+    parts = re.split(r"(?:[.!?;]+\s+|\n+|(?<=[.!?])$)", text)
     return [p.strip() for p in parts if p and p.strip()]
 
 
