@@ -1,10 +1,6 @@
 # claude-prove-done
 
-[English](#english) · [简体中文](#中文)
-
----
-
-<a id="english"></a>
+*🌐 [简体中文版](#简体中文) — collapsed at the bottom of this file.*
 
 > **Memory ≠ evidence.**
 > *The missing beat between "I'm done" and "you can verify."*
@@ -257,11 +253,12 @@ MIT
 
 ---
 
-[↑ Back to top](#claude-prove-done) · [English](#english) · [简体中文](#中文)
+<a id="简体中文"></a>
 
----
+<details>
+<summary><strong>📖 简体中文版（点击展开）</strong></summary>
 
-<a id="中文"></a>
+<br>
 
 > **记忆 ≠ 证据。**
 > *"我做完了" 和 "你可以核对" 之间缺的那一拍。*
@@ -514,6 +511,4 @@ Hook（`.claude/hooks/prove-done-check.*`）是 Claude Code 特有的 —— 它
 
 MIT
 
----
-
-[↑ 回到顶部](#claude-prove-done) · [English](#english) · [简体中文](#中文)
+</details>
