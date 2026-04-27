@@ -36,7 +36,7 @@ No citation → no claim. If you can't verify, say "not yet" instead.
 
 ```bash
 mkdir -p .claude/skills
-git clone https://github.com/<your-fork>/prove-done.git .claude/skills/prove-done
+git clone https://github.com/xiaogeli/claude-prove-done.git .claude/skills/prove-done
 ```
 
 ### Global (all projects)
@@ -44,13 +44,13 @@ git clone https://github.com/<your-fork>/prove-done.git .claude/skills/prove-don
 **macOS / Linux:**
 ```bash
 mkdir -p ~/.claude/skills
-git clone https://github.com/<your-fork>/prove-done.git ~/.claude/skills/prove-done
+git clone https://github.com/xiaogeli/claude-prove-done.git ~/.claude/skills/prove-done
 ```
 
 **Windows (PowerShell):**
 ```powershell
 New-Item -ItemType Directory -Force "$env:USERPROFILE\.claude\skills"
-git clone https://github.com/<your-fork>/prove-done.git "$env:USERPROFILE\.claude\skills\prove-done"
+git clone https://github.com/xiaogeli/claude-prove-done.git "$env:USERPROFILE\.claude\skills\prove-done"
 ```
 
 After install, restart Claude Code. The skill auto-loads from the `skills/` directory and activates on its triggers.
