@@ -75,7 +75,28 @@ One line: *git-guardrails stops `--force`. think-twice stops `--rushed`. prove-d
 
 ## Install
 
-### Project-local (recommended for teams)
+### One-liner (recommended)
+
+Personal scope (all your projects):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/xiaogeli/claude-prove-done/main/install.sh | bash
+```
+
+Project scope (commit `.claude/` alongside this repo so the team shares it):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/xiaogeli/claude-prove-done/main/install.sh | bash -s -- --project
+```
+
+The installer clones to a temp dir, copies the skill + hooks into `~/.claude/` (or `./.claude/` with `--project`), merges the Stop-hook entry into `settings.json` while preserving any existing hooks, and rewrites the hook command path to absolute (personal) or relative (project) so it resolves correctly. Re-running is idempotent — duplicate entries are detected and skipped. Source: [`install.sh`](./install.sh).
+
+> **Restart Claude Code afterwards.** Skills hot-reload, but hooks register only at session start.
+
+### Manual install (if you'd rather see every step)
+
+<details>
+<summary>Project-local (recommended for teams)</summary>
 
 Commit `.claude/` so everyone gets the same backstop:
 
@@ -90,7 +111,10 @@ chmod +x .claude/hooks/prove-done-check.sh
 
 Then merge the `hooks` block from `/tmp/claude-prove-done/.claude/settings.json` into your project's `.claude/settings.json`, and commit `.claude/skills/prove-done/`, both `.claude/hooks/prove-done-check.*`, and the updated `settings.json`.
 
-### Personal (all your projects)
+</details>
+
+<details>
+<summary>Personal (all your projects)</summary>
 
 Drop the skill and hook under `~/.claude/`:
 
@@ -104,7 +128,14 @@ chmod +x ~/.claude/hooks/prove-done-check.sh
 # Merge the `hooks` block from /tmp/claude-prove-done/.claude/settings.json into ~/.claude/settings.json
 ```
 
-### Windows (PowerShell)
+</details>
+
+### Windows
+
+The one-liner above works in **git-bash** or **WSL**. (Claude Code already requires one of those, so you have one.) PowerShell users can run the curl-pipe-bash inside git-bash, or use the manual PowerShell flow below.
+
+<details>
+<summary>Manual install via PowerShell</summary>
 
 ```powershell
 git clone https://github.com/xiaogeli/claude-prove-done.git $env:TEMP\claude-prove-done
@@ -114,7 +145,9 @@ Copy-Item "$env:TEMP\claude-prove-done\.claude\hooks\prove-done-check.*" "$env:U
 # Merge the hooks block from $env:TEMP\claude-prove-done\.claude\settings.json into $env:USERPROFILE\.claude\settings.json
 ```
 
-> **Important — restart Claude Code after install.** Skills hot-reload, but **hooks register only at session start**. Until you restart, completion claims will NOT be blocked. To verify both installed correctly: restart → ask Claude *"list your skills"* (should include `prove-done`) → give it a tiny task and watch it cite Read/Grep output instead of asserting from memory.
+</details>
+
+After **any** install method, restart Claude Code so the hook registers. To verify: restart → ask Claude *"list your skills"* (should include `prove-done`) → give it a tiny task and watch it cite Read/Grep output instead of asserting from memory.
 
 ## Requirements
 

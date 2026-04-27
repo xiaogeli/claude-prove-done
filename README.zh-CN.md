@@ -75,7 +75,28 @@ Agent 早就知道规则：*没法证明就别说做完了。*被问到时它能
 
 ## 安装
 
-### 项目级（推荐团队使用）
+### 一行命令（推荐）
+
+个人级（影响你所有项目）：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/xiaogeli/claude-prove-done/main/install.sh | bash
+```
+
+项目级（把 `.claude/` 提交进当前仓库给团队共享）：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/xiaogeli/claude-prove-done/main/install.sh | bash -s -- --project
+```
+
+安装脚本会 clone 到临时目录、把 skill + hook 文件复制到 `~/.claude/`（或 `--project` 时复制到 `./.claude/`）、把 Stop hook 条目 merge 进 `settings.json`（保留你已有的所有 hook，重复的不会重复加），并根据 scope 把 hook 命令路径改写成绝对路径（个人级）或相对路径（项目级）以便在任何工作目录都能解析。重复运行是幂等的。源码：[`install.sh`](./install.sh)。
+
+> **装完重启 Claude Code。** Skill 会热加载，hook 只在 session 启动时注册。
+
+### 手动安装（想看每一步的话）
+
+<details>
+<summary>项目级（推荐团队使用）</summary>
 
 把 `.claude/` 提交进仓库，团队成员共享同一个 backstop：
 
@@ -90,7 +111,10 @@ chmod +x .claude/hooks/prove-done-check.sh
 
 然后把 `/tmp/claude-prove-done/.claude/settings.json` 里的 `hooks` 块 merge 进你项目的 `.claude/settings.json`，再把 `.claude/skills/prove-done/`、两个 `.claude/hooks/prove-done-check.*`、以及更新后的 `settings.json` 一起 commit。
 
-### 个人级（所有项目）
+</details>
+
+<details>
+<summary>个人级（所有项目）</summary>
 
 把 skill 和 hook 放到 `~/.claude/`：
 
@@ -104,7 +128,14 @@ chmod +x ~/.claude/hooks/prove-done-check.sh
 # 把 /tmp/claude-prove-done/.claude/settings.json 里的 `hooks` 块 merge 进 ~/.claude/settings.json
 ```
 
-### Windows (PowerShell)
+</details>
+
+### Windows
+
+上面的一行命令在 **git-bash** 或 **WSL** 里能直接跑（Claude Code 本身就要其中之一）。PowerShell 用户可以在 git-bash 里跑 curl 那条，或者用下面的手动 PowerShell 流程。
+
+<details>
+<summary>PowerShell 手动安装</summary>
 
 ```powershell
 git clone https://github.com/xiaogeli/claude-prove-done.git $env:TEMP\claude-prove-done
@@ -114,7 +145,9 @@ Copy-Item "$env:TEMP\claude-prove-done\.claude\hooks\prove-done-check.*" "$env:U
 # 把 $env:TEMP\claude-prove-done\.claude\settings.json 里的 hooks 块 merge 进 $env:USERPROFILE\.claude\settings.json
 ```
 
-> **重要 —— 装完重启 Claude Code。** Skill 会热加载，但 **hook 只在 session 启动时注册**。重启之前完成声明**不会**被拦。验证装对了的方法：重启 → 让 Claude *"list your skills"*（应该看到 `prove-done`）→ 给一个小任务，看它会不会引用 Read/Grep 的输出而不是凭记忆断言。
+</details>
+
+不管用哪种方式装，装完都要重启 Claude Code 让 hook 注册。验证：重启 → 让 Claude *"list your skills"*（应该看到 `prove-done`）→ 给一个小任务，看它会不会引用 Read/Grep 的输出而不是凭记忆断言。
 
 ## 依赖
 
